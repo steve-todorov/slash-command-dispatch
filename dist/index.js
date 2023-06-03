@@ -119,6 +119,7 @@ function getCommandsConfigFromInputs(inputs) {
 }
 exports.getCommandsConfigFromInputs = getCommandsConfigFromInputs;
 function getCommandsConfigFromJson(json) {
+    var _a;
     const jsonConfig = JSON.parse(json);
     core.debug(`JSON config: ${(0, util_1.inspect)(jsonConfig)}`);
     const config = [];
@@ -129,15 +130,10 @@ function getCommandsConfigFromJson(json) {
             issue_type: jc.issue_type ? jc.issue_type : exports.commandDefaults.issue_type,
             allow_edits: toBool(jc.allow_edits, exports.commandDefaults.allow_edits),
             repository: jc.repository ? jc.repository : exports.commandDefaults.repository,
-            event_type_suffix: jc.event_type_suffix
-                ? jc.event_type_suffix
-                : exports.commandDefaults.event_type_suffix,
-            static_args: jc.static_args
-                ? jc.static_args
-                : exports.commandDefaults.static_args,
-            dispatch_type: jc.dispatch_type
-                ? jc.dispatch_type
-                : exports.commandDefaults.dispatch_type
+            event_type_suffix: jc.event_type_suffix ? jc.event_type_suffix : exports.commandDefaults.event_type_suffix,
+            static_args: jc.static_args ? jc.static_args : exports.commandDefaults.static_args,
+            dispatch_type: jc.dispatch_type ? jc.dispatch_type : exports.commandDefaults.dispatch_type,
+            payload: (_a = jc.payload) !== null && _a !== void 0 ? _a : jc.payload
         };
         config.push(cmd);
     }
@@ -430,6 +426,7 @@ const command_helper_1 = __nccwpck_require__(9622);
 const github_helper_1 = __nccwpck_require__(446);
 const utils = __importStar(__nccwpck_require__(918));
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Check required context properties exist (satisfy type checking)
@@ -492,7 +489,7 @@ function run() {
                 core.info(`Command '${commandTokens[0]}' is not configured for the issue type '${issueType}'.`);
                 return;
             }
-            // Filter matching commands by whether or not to allow edits
+            // Filter matching commands by whether to allow edits
             if (github.context.payload.action == 'edited') {
                 configMatches = configMatches.filter(function (cmd) {
                     return cmd.allow_edits;
@@ -531,8 +528,7 @@ function run() {
             // Truncate the body to keep the size of the payload under the max
             if (clientPayload.github.payload.issue &&
                 clientPayload.github.payload.issue.body) {
-                clientPayload.github.payload.issue.body =
-                    clientPayload.github.payload.issue.body.slice(0, 1000);
+                clientPayload.github.payload.issue.body = clientPayload.github.payload.issue.body.slice(0, 1000);
             }
             // Get the pull request context for the dispatch payload
             if (isPullRequest) {
@@ -547,6 +543,7 @@ function run() {
             for (const cmd of configMatches) {
                 // Generate slash command payload
                 clientPayload.slash_command = (0, command_helper_1.getSlashCommandPayload)(commandTokens, cmd.static_args);
+                clientPayload.slash_command["payload"] = (_a = cmd.payload) !== null && _a !== void 0 ? _a : null;
                 core.debug(`Slash command payload: ${(0, util_1.inspect)(clientPayload.slash_command)}`);
                 // Dispatch the command
                 yield githubHelper.createDispatch(cmd, clientPayload);
@@ -560,8 +557,7 @@ function run() {
             const message = utils.getErrorMessage(error);
             // Handle validation errors from workflow dispatch
             if (message.startsWith('Unexpected inputs provided') ||
-                (message.startsWith('Required input') &&
-                    message.endsWith('not provided')) ||
+                (message.startsWith('Required input') && message.endsWith('not provided')) ||
                 message.startsWith('No ref found for:') ||
                 message == `Workflow does not have 'workflow_dispatch' trigger`) {
                 core.setOutput('error-message', message);

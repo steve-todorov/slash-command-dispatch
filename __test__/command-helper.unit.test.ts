@@ -110,7 +110,8 @@ describe('command-helper tests', () => {
         "issue_type": "pull-request",
         "allow_edits": true,
         "repository": "owner/repo",
-        "event_type_suffix": "-cmd"
+        "event_type_suffix": "-cmd",
+        "payload": { "example": "payload", "object": "with", "data": "inside" }
       },
       {
         "command": "test-all-the-things",
@@ -133,6 +134,7 @@ describe('command-helper tests', () => {
     expect(config[0].event_type_suffix).toEqual('-cmd')
     expect(config[0].static_args).toEqual([])
     expect(config[0].dispatch_type).toEqual('repository')
+    expect(config[0].payload).toEqual({ example: "payload", object: "with", data: "inside" })
     expect(config[1].command).toEqual(commands[1])
     expect(config[1].permission).toEqual('read')
     expect(config[1].issue_type).toEqual(commandDefaults.issue_type)
@@ -233,7 +235,7 @@ describe('command-helper tests', () => {
     expect(tokeniseCommand(command)).toEqual(commandTokens)
   })
 
-  test('tokenisation of malformed command arguments', async () => {
+  test('tokenization of malformed command arguments', async () => {
     const command = `test arg named= quoted arg" named-arg="with \\"quoted value`
     const commandTokens = [
       'test',

@@ -36,6 +36,7 @@ export interface Command {
   event_type_suffix: string
   static_args: string[]
   dispatch_type: string
+  payload?: string // optional payload to be passed as "github.event.client_payload.slash_command.payload"
 }
 
 export interface SlashCommandPayload {
@@ -140,15 +141,10 @@ export function getCommandsConfigFromJson(json: string): Command[] {
       issue_type: jc.issue_type ? jc.issue_type : commandDefaults.issue_type,
       allow_edits: toBool(jc.allow_edits, commandDefaults.allow_edits),
       repository: jc.repository ? jc.repository : commandDefaults.repository,
-      event_type_suffix: jc.event_type_suffix
-        ? jc.event_type_suffix
-        : commandDefaults.event_type_suffix,
-      static_args: jc.static_args
-        ? jc.static_args
-        : commandDefaults.static_args,
-      dispatch_type: jc.dispatch_type
-        ? jc.dispatch_type
-        : commandDefaults.dispatch_type
+      event_type_suffix: jc.event_type_suffix ? jc.event_type_suffix : commandDefaults.event_type_suffix,
+      static_args: jc.static_args ? jc.static_args : commandDefaults.static_args,
+      dispatch_type: jc.dispatch_type ? jc.dispatch_type : commandDefaults.dispatch_type,
+      payload: jc.payload ?? jc.payload
     }
     config.push(cmd)
   }

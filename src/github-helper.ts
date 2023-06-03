@@ -18,6 +18,7 @@ export interface ClientPayload
   pull_request?: any
   // eslint-disable-next-line
   slash_command?: SlashCommandPayload | any
+  custom_payload?: any
 }
 
 interface Repository {

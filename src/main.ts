@@ -94,7 +94,7 @@ async function run(): Promise<void> {
       return
     }
 
-    // Filter matching commands by whether or not to allow edits
+    // Filter matching commands by whether to allow edits
     if (github.context.payload.action == 'edited') {
       configMatches = configMatches.filter(function (cmd) {
         return cmd.allow_edits
@@ -152,8 +152,7 @@ async function run(): Promise<void> {
       clientPayload.github.payload.issue &&
       clientPayload.github.payload.issue.body
     ) {
-      clientPayload.github.payload.issue.body =
-        clientPayload.github.payload.issue.body.slice(0, 1000)
+      clientPayload.github.payload.issue.body = clientPayload.github.payload.issue.body.slice(0, 1000)
     }
 
     // Get the pull request context for the dispatch payload
@@ -176,9 +175,10 @@ async function run(): Promise<void> {
         commandTokens,
         cmd.static_args
       )
-      core.debug(
-        `Slash command payload: ${inspect(clientPayload.slash_command)}`
-      )
+      clientPayload.slash_command["payload"] = cmd.payload ?? null;
+
+      core.debug(`Slash command payload: ${inspect(clientPayload.slash_command)}`)
+
       // Dispatch the command
       await githubHelper.createDispatch(cmd, clientPayload)
     }
@@ -196,8 +196,7 @@ async function run(): Promise<void> {
     // Handle validation errors from workflow dispatch
     if (
       message.startsWith('Unexpected inputs provided') ||
-      (message.startsWith('Required input') &&
-        message.endsWith('not provided')) ||
+      (message.startsWith('Required input') && message.endsWith('not provided')) ||
       message.startsWith('No ref found for:') ||
       message == `Workflow does not have 'workflow_dispatch' trigger`
     ) {
